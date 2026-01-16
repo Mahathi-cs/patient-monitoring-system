@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Patient Details | PMS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+    --primary:#1e3c72;
+    --secondary:#2a5298;
+    --success:#27ae60;
+    --danger:#e74c3c;
+    --bg:#f4f6f9;
+    --text:#2c3e50;
+}
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:"Segoe UI",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+.header{
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    color:white;
+    padding:20px 40px;
+    font-size:20px;
+    font-weight:600;
+}
+
+.container{
+    width:1100px;
+    max-width:95%;
+    margin:30px auto;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:14px;
+    box-shadow:0 15px 40px rgba(0,0,0,.1);
+}
+
+.card h3{
+    margin-top:0;
+    color:#34495e;
+}
+
+.profile{
+    display:flex;
+    gap:16px;
+    align-items:center;
+}
+
+.avatar{
+    width:72px;
+    height:72px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#74ebd5,#9face6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    font-weight:700;
+    color:white;
+}
+
+.info{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid #eee;
+}
+
+.status{
+    margin-top:18px;
+    padding:12px;
+    border-radius:8px;
+    font-weight:600;
+    text-align:center;
+}
+
+.vitals{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+
+.vital{
+    background:#f8f9fb;
+    padding:16px;
+    border-radius:12px;
+    text-align:center;
+    font-size:14px;
+}
+
+.alert{
+    background:#fdecea;
+    color:#c0392b;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+textarea{
+    width:100%;
+    height:100px;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    resize:none;
+}
+
+.actions{
+    grid-column:1 / -1;
+    display:flex;
+    justify-content:space-between;
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.back{background:#ecf0f1}
+.emergency{background:var(--danger);color:white}
+
+.footer{
+    text-align:center;
+    margin:30px 0;
+    font-size:13px;
+    color:#7f8c8d;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Patient Details</div>
+
+<div class="container">
+
+<!-- Patient Info -->
+<div class="card">
+    <h3>Patient Information</h3>
+
+    <div class="profile">
+        <div class="avatar" id="avatar">P</div>
+        <div>
+            <h2 id="name">-</h2>
+            <small>ID: <span id="pid">-</span></small>
+        </div>
+    </div>
+
+    <div class="info"><span>Age</span><strong id="age">-</strong></div>
+    <div class="info"><span>Gender</span><strong id="gender">-</strong></div>
+    <div class="info"><span>Phone</span><strong id="phone">-</strong></div>
+    <div class="info"><span>Blood Group</span><strong id="blood">-</strong></div>
+    <div class="info"><span>Room / Ward</span><strong id="room">-</strong></div>
+
+    <div class="status" id="status">-</div>
+</div>
+
+<!-- Vitals -->
+<div class="card">
+    <h3>Vital Signs</h3>
+    <div class="vitals">
+        <div class="vital">Heart Rate<br><strong id="hr">-</strong></div>
+        <div class="vital">Blood Pressure<br><strong id="bp">-</strong></div>
+        <div class="vital">SpO₂<br><strong id="spo2">-</strong></div>
+        <div class="vital">Temperature<br><strong id="temp">-</strong></div>
+    </div>
+</div>
+
+<!-- Alerts -->
+<div class="card">
+    <h3>Recent Alerts</h3>
+    <div id="alerts">No alerts</div>
+</div>
+
+<!-- Notes -->
+<div class="card">
+    <h3>Doctor / Nurse Notes</h3>
+    <textarea placeholder="Enter observations..."></textarea>
+</div>
+
+<!-- Actions -->
+<div class="actions">
+    <button class="back" onclick="history.back()">← Back</button>
+    <button class="emergency" onclick="triggerAlert()">Trigger Emergency</button>
+</div>
+
+</div>
+
+<div class="footer">
+    Real-Time Patient Monitoring System • Internship Project
+</div>
+
+<script>
+/* -------- LOAD PATIENT -------- */
+const patients = JSON.parse(localStorage.getItem("patients") || "[]");
+const selectedName = localStorage.getItem("selectedPatient");
+
+if(!selectedName){
+    alert("No patient selected");
+    history.back();
+}
+
+const p = patients.find(x => x.name === selectedName);
+
+if(!p){
+    alert("Patient not found");
+    history.back();
+}
+
+/* -------- DISPLAY DATA -------- */
+document.getElementById("name").innerText = p.name;
+document.getElementById("age").innerText = p.age;
+document.getElementById("gender").innerText = p.gender || "N/A";
+document.getElementById("phone").innerText = p.phone || "N/A";
+document.getElementById("blood").innerText = p.blood || "N/A";
+document.getElementById("room").innerText = p.room || "General";
+
+document.getElementById("hr").innerText = (p.hr || 72) + " bpm";
+document.getElementById("bp").innerText = p.bp || "120 / 80";
+document.getElementById("spo2").innerText = (p.spo2 || 98) + "%";
+document.getElementById("temp").innerText = (p.temp || 36.8) + " °C";
+
+document.getElementById("avatar").innerText = p.name.charAt(0).toUpperCase();
+document.getElementById("pid").innerText = "P" + Math.floor(1000 + Math.random()*9000);
+
+/* -------- STATUS -------- */
+const status = document.getElementById("status");
+
+if(p.hr > 100 || p.hr < 60){
+    status.innerText = "CRITICAL CONDITION";
+    status.style.background = "#fdecea";
+    status.style.color = "#c0392b";
+    addAlert("Abnormal heart rate detected");
+}else{
+    status.innerText = "STABLE CONDITION";
+    status.style.background = "#eafaf1";
+    status.style.color = "#27ae60";
+}
+
+/* -------- ALERTS -------- */
+function addAlert(msg){
+    const box = document.getElementById("alerts");
+    box.innerHTML = `
+        <div class="alert">
+            ⚠ ${msg}<br>
+            <small>${new Date().toLocaleString()}</small>
+        </div>`;
+}
+
+function triggerAlert(){
+    addAlert("Emergency triggered manually");
+    alert("Emergency alert sent!");
+}
+</script>
+
+</body>
+</html>

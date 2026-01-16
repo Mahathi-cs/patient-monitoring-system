@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Alerts | PMS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+    --primary:#1e3c72;
+    --secondary:#2a5298;
+    --danger:#e74c3c;
+    --warning:#f39c12;
+    --success:#27ae60;
+    --bg:#f4f6f9;
+    --text:#2c3e50;
+    --muted:#7f8c8d;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI",sans-serif;background:var(--bg)}
+
+/* Sidebar */
+.sidebar{
+    width:230px;height:100vh;position:fixed;
+    background:linear-gradient(160deg,var(--primary),var(--secondary));
+    color:white;padding-top:25px;
+}
+.sidebar h2{text-align:center;margin-bottom:30px}
+.sidebar a{
+    display:block;padding:14px 22px;
+    color:white;text-decoration:none;font-size:14px
+}
+.sidebar a.active,.sidebar a:hover{
+    background:rgba(255,255,255,.15)
+}
+
+/* Topbar */
+.topbar{
+    height:64px;background:white;margin-left:230px;
+    display:flex;align-items:center;
+    padding:0 30px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08)
+}
+.topbar h1{font-size:22px;color:var(--text)}
+
+/* Main */
+.main{margin-left:230px;padding:30px}
+
+/* Card */
+.section{
+    background:white;
+    padding:25px;
+    border-radius:14px;
+    box-shadow:0 15px 35px rgba(0,0,0,.1)
+}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:14px;border-bottom:1px solid #eee}
+th{color:var(--muted);text-align:left}
+
+/* Badges */
+.badge{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+    color:white;
+}
+.critical{background:var(--danger)}
+.warning{background:var(--warning)}
+.active{background:var(--danger)}
+.resolved{background:var(--success)}
+
+/* Action buttons */
+.action{
+    cursor:pointer;
+    font-weight:600;
+    margin-right:8px;
+}
+.resolve{color:#27ae60}
+.undo{color:#e67e22}
+
+/* Empty */
+.empty{
+    text-align:center;
+    color:var(--muted);
+    padding:40px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>PMS</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="patients.html">Patients</a>
+    <a class="active" href="alerts.html">Alerts</a>
+    <a href="cicd.html">CI/CD</a>
+    <a href="index.html">Logout</a>
+</div>
+
+<div class="topbar">
+    <h1>Emergency Alerts</h1>
+</div>
+
+<div class="main">
+<div class="section">
+
+<table>
+<thead>
+<tr>
+<th>Patient</th>
+<th>Message</th>
+<th>Severity</th>
+<th>Date & Time</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="alertTable"></tbody>
+</table>
+
+<div id="empty" class="empty" style="display:none">
+🚨 No alerts available
+</div>
+
+</div>
+</div>
+
+<script>
+const table = document.getElementById("alertTable");
+const empty = document.getElementById("empty");
+
+function loadAlerts(){
+    const alerts = JSON.parse(localStorage.getItem("alerts") || "[]");
+    table.innerHTML = "";
+
+    if(alerts.length === 0){
+        empty.style.display = "block";
+        return;
+    }
+    empty.style.display = "none";
+
+    alerts.forEach((a,i)=>{
+        table.innerHTML += `
+        <tr>
+            <td>${a.patient}</td>
+            <td>${a.message}</td>
+            <td>
+                <span class="badge ${a.severity === "Critical" ? "critical" : "warning"}">
+                    ${a.severity}
+                </span>
+            </td>
+            <td>${a.time}</td>
+            <td>
+                <span class="badge ${a.resolved ? "resolved" : "active"}">
+                    ${a.resolved ? "Resolved" : "Active"}
+                </span>
+            </td>
+            <td>
+                ${a.resolved
+                ? `<span class="action undo" onclick="undoResolve(${i})">Undo</span>`
+                : `<span class="action resolve" onclick="resolveAlert(${i})">Resolve</span>`
+                }
+            </td>
+        </tr>`;
+    });
+}
+
+function resolveAlert(i){
+    const alerts = JSON.parse(localStorage.getItem("alerts"));
+    alerts[i].resolved = true;
+    localStorage.setItem("alerts", JSON.stringify(alerts));
+    loadAlerts();
+}
+
+function undoResolve(i){
+    const alerts = JSON.parse(localStorage.getItem("alerts"));
+    alerts[i].resolved = false;
+    localStorage.setItem("alerts", JSON.stringify(alerts));
+    loadAlerts();
+}
+
+loadAlerts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Patients | PMS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+    --primary:#1e3c72;
+    --secondary:#2a5298;
+    --bg:#f4f6f9;
+    --text:#2c3e50;
+    --muted:#7f8c8d;
+    --danger:#e74c3c;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Segoe UI",sans-serif;background:var(--bg);}
+
+/* Sidebar */
+.sidebar{
+    width:230px;height:100vh;position:fixed;
+    background:linear-gradient(160deg,var(--primary),var(--secondary));
+    color:white;padding-top:25px;
+}
+.sidebar h2{text-align:center;margin-bottom:30px;}
+.sidebar a{
+    display:block;padding:14px 22px;color:white;
+    text-decoration:none;font-size:14px;
+}
+.sidebar a.active,.sidebar a:hover{
+    background:rgba(255,255,255,.15);
+}
+
+/* Topbar */
+.topbar{
+    height:64px;background:white;margin-left:230px;
+    display:flex;align-items:center;
+    padding:0 30px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+.topbar h1{font-size:22px;color:var(--text);}
+
+/* Main */
+.main{margin-left:230px;padding:30px;}
+
+/* Button */
+.add-btn{
+    background:linear-gradient(120deg,var(--primary),var(--secondary));
+    color:white;padding:12px 18px;border:none;
+    border-radius:8px;font-weight:600;
+    cursor:pointer;margin-bottom:20px;
+}
+
+/* Table */
+.section{
+    background:white;padding:22px;border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{padding:12px;border-bottom:1px solid #eee;}
+th{color:var(--muted);text-align:left;}
+
+.action-btn{
+    margin-right:10px;
+    cursor:pointer;
+    font-weight:600;
+}
+.view{color:#2980b9;}
+.edit{color:#27ae60;}
+.delete{color:#e74c3c;}
+
+/* Modal */
+.modal{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.4);
+}
+.modal-content{
+    background:white;width:360px;
+    margin:100px auto;padding:25px;
+    border-radius:12px;
+}
+.modal-content input,select{
+    width:100%;padding:10px;margin-bottom:12px;
+}
+.modal-content button{
+    padding:10px 14px;border:none;
+    border-radius:6px;cursor:pointer;
+}
+.save{background:var(--primary);color:white;}
+.cancel{background:#bdc3c7;}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>PMS</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a class="active" href="patients.html">Patients</a>
+    <a href="alerts.html">Alerts</a>
+    <a href="cicd.html">CI/CD</a>
+    <a href="index.html">Logout</a>
+</div>
+
+<div class="topbar">
+    <h1>Patients</h1>
+</div>
+
+<div class="main">
+
+<button class="add-btn" onclick="openForm()">+ Add Patient</button>
+
+<div class="section">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Age</th>
+<th>Gender</th>
+<th>Blood Group</th>
+<th>Ward / Room</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="patientTable"></tbody>
+</table>
+</div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal" id="formBox">
+<div class="modal-content">
+<h3 id="formTitle">Add Patient</h3>
+
+<input id="pname" placeholder="Name">
+<input id="page" type="number" placeholder="Age">
+
+<select id="pgender">
+    <option value="">Gender</option>
+    <option>Male</option>
+    <option>Female</option>
+</select>
+
+<input id="pblood" placeholder="Blood Group (O+, A+)">
+<input id="pphone" placeholder="Phone Number">
+<input id="proom" placeholder="Ward / Room">
+
+<button class="save" onclick="savePatient()">Save</button>
+<button class="cancel" onclick="closeForm()">Cancel</button>
+</div>
+</div>
+
+<script>
+/* ---------- ELEMENTS ---------- */
+const formBox   = document.getElementById("formBox");
+const formTitle= document.getElementById("formTitle");
+const pname    = document.getElementById("pname");
+const pageEl   = document.getElementById("page");
+const pgender  = document.getElementById("pgender");
+const pblood   = document.getElementById("pblood");
+const pphone   = document.getElementById("pphone");
+const proom    = document.getElementById("proom");
+const table    = document.getElementById("patientTable");
+
+let editIndex = null;
+
+/* ---------- DEFAULT DATA ---------- */
+if(!localStorage.getItem("patients")){
+    localStorage.setItem("patients",JSON.stringify([
+        {name:"Arun",age:35,gender:"Male",blood:"O+",phone:"9876543210",room:"ICU-2",hr:72},
+        {name:"Priya",age:42,gender:"Female",blood:"A+",phone:"9123456780",room:"Ward-5",hr:110}
+    ]));
+}
+
+/* ---------- LOAD ---------- */
+function loadPatients(){
+    table.innerHTML="";
+    const arr = JSON.parse(localStorage.getItem("patients"));
+    arr.forEach((p,i)=>{
+        table.innerHTML += `
+        <tr>
+            <td>${p.name}</td>
+            <td>${p.age}</td>
+            <td>${p.gender}</td>
+            <td>${p.blood || "-"}</td>
+            <td>${p.room || "-"}</td>
+            <td>
+                <span class="action-btn view" onclick="viewPatient('${p.name}')">View</span>
+                <span class="action-btn edit" onclick="editPatient(${i})">Edit</span>
+                <span class="action-btn delete" onclick="deletePatient(${i})">Delete</span>
+            </td>
+        </tr>`;
+    });
+}
+
+/* ---------- ACTIONS ---------- */
+function viewPatient(name){
+    localStorage.setItem("selectedPatient",name);
+    location.href="patient-details.html";
+}
+
+function openForm(){
+    editIndex=null;
+    formTitle.innerText="Add Patient";
+    clearForm();
+    formBox.style.display="block";
+}
+
+function closeForm(){
+    formBox.style.display="none";
+}
+
+function clearForm(){
+    pname.value="";
+    pageEl.value="";
+    pgender.value="";
+    pblood.value="";
+    pphone.value="";
+    proom.value="";
+}
+
+function savePatient(){
+    if(!pname.value || !pageEl.value || !pgender.value){
+        alert("Please fill required fields");
+        return;
+    }
+
+    const arr = JSON.parse(localStorage.getItem("patients"));
+    const data = {
+        name:pname.value,
+        age:Number(pageEl.value),
+        gender:pgender.value,
+        blood:pblood.value,
+        phone:pphone.value,
+        room:proom.value,
+        hr:70
+    };
+
+    if(editIndex === null){
+        arr.push(data);
+    }else{
+        arr[editIndex] = data;
+    }
+
+    localStorage.setItem("patients",JSON.stringify(arr));
+    closeForm();
+    loadPatients();
+}
+
+function editPatient(index){
+    const arr = JSON.parse(localStorage.getItem("patients"));
+    const p = arr[index];
+    editIndex=index;
+
+    formTitle.innerText="Edit Patient";
+    formBox.style.display="block";
+
+    pname.value=p.name;
+    pageEl.value=p.age;
+    pgender.value=p.gender;
+    pblood.value=p.blood;
+    pphone.value=p.phone;
+    proom.value=p.room;
+}
+
+function deletePatient(index){
+    if(confirm("Are you sure you want to delete this patient?")){
+        const arr = JSON.parse(localStorage.getItem("patients"));
+        arr.splice(index,1);
+        localStorage.setItem("patients",JSON.stringify(arr));
+        loadPatients();
+    }
+}
+
+loadPatients();
+</script>
+
+</body>
+</html>

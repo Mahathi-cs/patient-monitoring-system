@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard | Patient Monitoring System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+    --primary:#1e3c72;
+    --secondary:#2a5298;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --text:#2c3e50;
+    --muted:#7f8c8d;
+    --success:#27ae60;
+    --danger:#e74c3c;
+    --warning:#f39c12;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+    font-family:"Segoe UI", system-ui, sans-serif;
+    background:var(--bg);
+}
+
+/* Sidebar */
+.sidebar{
+    width:230px;
+    height:100vh;
+    position:fixed;
+    background:linear-gradient(160deg,var(--primary),var(--secondary));
+    color:white;
+    padding-top:25px;
+}
+
+.sidebar h2{
+    text-align:center;
+    margin-bottom:30px;
+    font-weight:600;
+}
+
+.sidebar a{
+    display:block;
+    padding:14px 22px;
+    color:white;
+    text-decoration:none;
+    font-size:14px;
+    opacity:0.9;
+}
+
+.sidebar a.active,
+.sidebar a:hover{
+    background:rgba(255,255,255,0.15);
+}
+
+/* Top Bar */
+.topbar{
+    height:64px;
+    background:white;
+    margin-left:230px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 30px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.topbar h1{
+    font-size:22px;
+    color:var(--text);
+}
+
+.user{
+    font-size:14px;
+    color:var(--muted);
+}
+
+/* Main */
+.main{
+    margin-left:230px;
+    padding:30px;
+}
+
+/* KPI Cards */
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:22px;
+    margin-bottom:30px;
+}
+
+.card{
+    background:var(--card);
+    padding:24px;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+.card small{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.card h2{
+    margin-top:8px;
+    font-size:32px;
+    color:var(--primary);
+}
+
+.trend{
+    margin-top:10px;
+    font-size:13px;
+}
+
+.up{color:var(--success);}
+.down{color:var(--danger);}
+
+/* Layout */
+.grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+}
+
+/* Section */
+.section{
+    background:var(--card);
+    padding:22px;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+.section h3{
+    font-size:18px;
+    margin-bottom:15px;
+}
+
+/* Table */
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+}
+
+th{
+    text-align:left;
+    color:var(--muted);
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    color:white;
+}
+
+.stable{background:var(--success);}
+.critical{background:var(--danger);}
+
+/* Alerts */
+.alert{
+    background:#fff5f5;
+    border-left:4px solid var(--danger);
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+/* System Health */
+.health div{
+    background:#f8f9fb;
+    padding:14px;
+    border-radius:10px;
+    font-size:14px;
+    margin-bottom:10px;
+}
+
+.health span{
+    font-weight:600;
+    color:var(--primary);
+}
+
+/* Responsive */
+@media(max-width:1000px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:900px){
+    .sidebar{
+        position:relative;
+        width:100%;
+        height:auto;
+    }
+    .topbar,
+    .main{
+        margin-left:0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>PMS</h2>
+    <a class="active" href="dashboard.html">Dashboard</a>
+    <a href="patients.html">Patients</a>
+    <a href="alerts.html">Alerts</a>
+    <a href="cicd.html">CI/CD</a>
+    <a href="index.html">Logout</a>
+</div>
+
+<!-- Top Bar -->
+<div class="topbar">
+    <h1>Dashboard</h1>
+    <div class="user">Admin • Hospital System</div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+    <!-- KPI -->
+    <div class="cards">
+        <div class="card">
+            <small>Total Patients</small>
+            <h2 id="totalPatients">0</h2>
+            <div class="trend up">▲ +2 today</div>
+        </div>
+        <div class="card">
+            <small>Critical Patients</small>
+            <h2 id="criticalPatients">0</h2>
+            <div class="trend down">▲ Requires attention</div>
+        </div>
+        <div class="card">
+            <small>Active Alerts</small>
+            <h2 id="alertsCount">0</h2>
+            <div class="trend up">Live monitoring</div>
+        </div>
+        <div class="card">
+            <small>System Uptime</small>
+            <h2>99.9%</h2>
+            <div class="trend up">Stable</div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid">
+
+        <!-- Patients -->
+        <div class="section">
+            <h3>Live Patient Monitoring</h3>
+            <table id="patientTable">
+                <tr>
+                    <th>Patient</th>
+                    <th>Heart Rate</th>
+                    <th>Status</th>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Right Panel -->
+        <div>
+
+            <div class="section" style="margin-bottom:25px;">
+                <h3>Critical Alerts</h3>
+                <div id="alerts"></div>
+            </div>
+
+            <div class="section">
+                <h3>System Health</h3>
+                <div class="health">
+                    <div>Docker: <span>Running</span></div>
+                    <div>Jenkins: <span>Pipeline Success</span></div>
+                    <div>Last Deploy: <span>2 hours ago</span></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const patients = [
+    {name:"Arun", hr:72},
+    {name:"Priya", hr:118},
+    {name:"Kumar", hr:66},
+    {name:"Divya", hr:95},
+    {name:"Ravi", hr:110}
+];
+
+function render(){
+    const table = document.getElementById("patientTable");
+    const alertsDiv = document.getElementById("alerts");
+    table.innerHTML = `
+        <tr>
+            <th>Patient</th>
+            <th>Heart Rate</th>
+            <th>Status</th>
+        </tr>`;
+    alertsDiv.innerHTML = "";
+
+    let critical = 0;
+    let alerts = 0;
+
+    patients.forEach(p=>{
+        p.hr += Math.floor(Math.random()*7 - 3);
+
+        let status = "Stable";
+        let cls = "stable";
+
+        if(p.hr > 100 || p.hr < 60){
+            status = "Critical";
+            cls = "critical";
+            critical++;
+            alerts++;
+            alertsDiv.innerHTML += `
+                <div class="alert">
+                    ${p.name} – Abnormal heart rate (${p.hr} bpm)
+                </div>`;
+        }
+
+        table.innerHTML += `
+            <tr>
+                <td>${p.name}</td>
+                <td>${p.hr} bpm</td>
+                <td><span class="status ${cls}">${status}</span></td>
+            </tr>`;
+    });
+
+    document.getElementById("totalPatients").textContent = patients.length;
+    document.getElementById("criticalPatients").textContent = critical;
+    document.getElementById("alertsCount").textContent = alerts;
+}
+
+render();
+setInterval(render, 5000);
+</script>
+
+</body>
+</html>
