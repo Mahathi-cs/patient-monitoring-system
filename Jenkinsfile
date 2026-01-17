@@ -10,28 +10,32 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Docker Build') {
             steps {
-                echo 'Build stage - frontend project'
+                echo 'Building Docker image...'
+                bat 'docker build -t patient-monitoring-app .'
             }
         }
 
-        stage('Test') {
+        stage('Docker Run') {
             steps {
-                echo 'No tests configured yet'
-            }
-        }
+                echo 'Running Docker container...'
 
-        stage('Deploy') {
-            steps {
-                echo 'Deploy stage (future Docker deploy)'
+                // Stop & remove old container if exists
+                bat '''
+                docker stop pms-app || exit 0
+                docker rm pms-app || exit 0
+                '''
+
+                // Run on port 3000 (NOT 8080)
+                bat 'docker run -d -p 3000:80 --name pms-app patient-monitoring-app'
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline executed successfully!'
+            echo 'CI/CD Pipeline completed successfully!'
         }
         failure {
             echo 'Pipeline failed!'
