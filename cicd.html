@@ -54,9 +54,10 @@ body{font-family:"Segoe UI",sans-serif;background:var(--bg);}
 /* Main */
 .main{margin-left:230px;padding:30px;}
 
-/* Cards */
+/* Info Cards */
 .cards{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:20px;margin-bottom:30px;
 }
 .card{
@@ -65,7 +66,7 @@ body{font-family:"Segoe UI",sans-serif;background:var(--bg);}
     box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 .card h3{font-size:14px;color:var(--muted);}
-.card p{font-size:22px;font-weight:700;margin-top:6px;}
+.card p{font-size:20px;font-weight:700;margin-top:6px;}
 
 /* Pipeline */
 .pipeline{
@@ -84,9 +85,8 @@ body{font-family:"Segoe UI",sans-serif;background:var(--bg);}
     font-size:12px;font-weight:600;
 }
 .pending{background:#ecf0f1;color:#7f8c8d;}
-.running{background:#f1c40f;color:white;}
+.running{background:var(--warning);color:white;}
 .success{background:var(--success);color:white;}
-.failed{background:var(--danger);color:white;}
 
 /* Logs */
 .logs{
@@ -97,7 +97,7 @@ body{font-family:"Segoe UI",sans-serif;background:var(--bg);}
 .log-box{
     background:#111;color:#0f0;
     padding:15px;border-radius:10px;
-    height:200px;overflow:auto;
+    height:220px;overflow:auto;
     font-family:monospace;font-size:13px;
 }
 </style>
@@ -116,40 +116,44 @@ body{font-family:"Segoe UI",sans-serif;background:var(--bg);}
 
 <div class="topbar">
     <h1>CI/CD Pipeline</h1>
-    <button class="run-btn" onclick="runPipeline()">▶ Run Pipeline</button>
+    <button class="run-btn" onclick="runPipeline()">▶ Simulate Pipeline</button>
 </div>
 
 <div class="main">
 
+<!-- CI/CD Info -->
 <div class="cards">
     <div class="card">
-        <h3>Repository</h3>
+        <h3>Source Control</h3>
         <p>GitHub</p>
     </div>
     <div class="card">
-        <h3>Build Tool</h3>
-        <p>Maven</p>
+        <h3>CI Tool</h3>
+        <p>Jenkins (Poll SCM)</p>
     </div>
     <div class="card">
         <h3>Container</h3>
         <p>Docker</p>
     </div>
     <div class="card">
-        <h3>Deployment</h3>
-        <p>Cloud</p>
+        <h3>Last Build Status</h3>
+        <p style="color:green">SUCCESS</p>
+        <small>Triggered automatically</small>
     </div>
 </div>
 
+<!-- Pipeline Stages -->
 <div class="pipeline">
-    <div class="stage"><h4>Git Pull</h4><span class="badge pending" id="git">Pending</span></div>
+    <div class="stage"><h4>Git Checkout</h4><span class="badge pending" id="git">Pending</span></div>
     <div class="stage"><h4>Build</h4><span class="badge pending" id="build">Pending</span></div>
     <div class="stage"><h4>Test</h4><span class="badge pending" id="test">Pending</span></div>
-    <div class="stage"><h4>Docker</h4><span class="badge pending" id="docker">Pending</span></div>
+    <div class="stage"><h4>Docker Build</h4><span class="badge pending" id="docker">Pending</span></div>
     <div class="stage"><h4>Deploy</h4><span class="badge pending" id="deploy">Pending</span></div>
 </div>
 
+<!-- Logs -->
 <div class="logs">
-    <h3>Pipeline Logs</h3>
+    <h3>Jenkins Pipeline Logs (Simulated)</h3>
     <div class="log-box" id="logs"></div>
 </div>
 
@@ -160,8 +164,8 @@ const stages=["git","build","test","docker","deploy"];
 const logs=document.getElementById("logs");
 
 function log(msg){
-    logs.innerHTML+=msg+"<br>";
-    logs.scrollTop=logs.scrollHeight;
+    logs.innerHTML += msg + "<br>";
+    logs.scrollTop = logs.scrollHeight;
 }
 
 function reset(){
@@ -187,13 +191,13 @@ function runPipeline(){
             const cur=document.getElementById(stages[i]);
             cur.className="badge running";
             cur.innerText="Running";
-            log(`▶ ${stages[i].toUpperCase()} stage started...`);
+            log(`[Jenkins] ${stages[i].toUpperCase()} stage started...`);
             setTimeout(()=>{
-                log(`✔ ${stages[i].toUpperCase()} stage completed`);
+                log(`[Jenkins] ${stages[i].toUpperCase()} completed successfully`);
                 i++; next();
-            },1000);
+            },1200);
         }else{
-            log("🎉 Pipeline executed successfully!");
+            log("[Jenkins] 🎉 Pipeline completed successfully");
         }
     }
     next();
